@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><testsuite errors="0" failures="0" name="tests.api.users.UserTests" skipped="0" tests="2" time="2.51" timestamp="2021-08-02 09:03:48"><testcase classname="tests.api.users.UserTests" name="Test login new user"/><testcase classname="tests.api.users.UserTests" name="Test post new user"/></testsuite>

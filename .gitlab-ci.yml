@@ -1,0 +1,70 @@
+image: $PATH/qa-automation:latest
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+  S3_BUCKET_TEST_ARTIFACTS: test-artifacts-$ENVIRONMENT
+
+stages:
+  - build
+  - run-test
+
+build and check styles:
+  stage: build
+  script:
+    - git fetch origin master
+    - gradle build -x test
+    - gradle compileTestJava -x test
+  rules:
+    #always trigger build step when pushing to master branch
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "master"'
+      when: always
+    #manually trigger build step when pushing to any branch except master
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH != "master"'
+      when: manual
+    #automatically trigger build step when creating merge request, created by pipelines schedule or triggered from web
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_PIPELINE_SOURCE == "schedule" || $CI_PIPELINE_SOURCE == "web"'
+      when: on_success
+  cache:
+    key: ${CI_COMMIT_SHA}
+    paths:
+      - build/
+      - .gradle/
+  retry:
+    max: 2
+    when: runner_system_failure
+
+.test:
+  script: ./gradlew clean test -Dtags='$TAGS_EXPRESSION'
+  retry:
+    max: 2
+    when: runner_system_failure
+  after_script:
+    - export NOW=$(date +%Y-%m-%d_%H-%M-%S-%3N)
+    - aws s3 cp --recursive ./target/site/serenity/ s3://$S3_BUCKET_TEST_ARTIFACTS/qa/reports/html-report/Backend/$NOW/ --include "*";
+    - "echo REPORT URL: https://$S3_BUCKET_TEST_ARTIFACTS.s3-eu-west-1.amazonaws.com/qa/reports/html-report/Backend/$NOW/index.html"
+  artifacts:
+    when: always
+    paths:
+      - target/site/serenity
+  when: manual
+
+be-tests:
+  stage: run-test
+  extends: .test
+  variables:
+    TAGS_EXPRESSION: 'api:users'
+  except:
+    - pipelines
+
+fe-tests:
+  stage: run-test
+  extends: .test
+  variables:
+    TAGS_EXPRESSION: 'ui:login'
+  except:
+    - pipelines
+
+

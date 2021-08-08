@@ -1,0 +1,5 @@
+"Story","Title","Result","Date","Stability","Duration (s)"
+"User tests","Test login new user","SUCCESS","2021-08-02T09:03:48.406236+02:00[Europe/Amsterdam]","0.0","2.26"
+"User tests","Test post new user","SUCCESS","2021-08-02T09:03:50.713303+02:00[Europe/Amsterdam]","0.0","0.25"
+"Login tests","Log in test success","SUCCESS","2021-08-02T09:03:48.519854+02:00[Europe/Amsterdam]","0.0","6.2"
+"Login tests","Log in test error","SUCCESS","2021-08-02T09:03:54.932131+02:00[Europe/Amsterdam]","0.0","3.99"
